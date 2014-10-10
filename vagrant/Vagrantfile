@@ -52,7 +52,7 @@ Vagrant.configure(vagrantfile_api_version) do |config|
       # VMs.  And for an HA setup we need two interfaces which are
       # teamed and able to communicate with other VMs.  On VirtualBox
       # this means making them host-only.
-      override.vm.network "private_network", ip: "192.168.124.10", auto_config: false
+      override.vm.network "private_network", ip: "192.168.124.10", virtualbox__intnet: "cloud-admin",  auto_config: false
     end
 
     admin.vm.provider "libvirt" do |provider, override|
@@ -109,7 +109,7 @@ Vagrant.configure(vagrantfile_api_version) do |config|
   2.times do |i|
     node_name = "controller#{i+1}"
     config.vm.define node_name do |node|
-      node.vm.box = 'suse/sles11-sp3'
+      node.vm.box = 'sles-11sp3-minimal'
       node.vm.box_check_update = false
 
       node.vm.provider 'virtualbox' do |provider|
@@ -127,7 +127,7 @@ Vagrant.configure(vagrantfile_api_version) do |config|
         provider.customize [ 'createhd', '--filename', "drbd-#{node_name}.vmdk", '--size', 2100, '--format', 'VMDK' ]
         provider.customize [
           'storageattach', :id,
-          '--storagectl', 'SCSI',
+          '--storagectl', 'SCSI Controller',
           '--port', 1,
           '--device', 0,
           '--type', 'hdd',
@@ -138,7 +138,7 @@ Vagrant.configure(vagrantfile_api_version) do |config|
         provider.customize [ 'modifyhd', 'sbd.vmdk', '--type', 'shareable' ]
         provider.customize [
           'storageattach', :id,
-          '--storagectl', 'SCSI',
+          '--storagectl', 'SCSI Controller',
           '--port', 2,
           '--device', 0,
           '--type', 'hdd',
@@ -161,7 +161,8 @@ Vagrant.configure(vagrantfile_api_version) do |config|
 
       node.vm.synced_folder ".", "/vagrant", disabled: true
 
-      node.vm.network "private_network", ip: "192.168.124.#{80+i}", auto_config: false
+      # Setup network
+      node.vm.network "private_network", type: "dhcp", virtualbox__intnet: "cloud-admin",  auto_config: true
 
       files_to_provision = [
         # https://bugzilla.novell.com/show_bug.cgi?id=877484
@@ -199,7 +200,7 @@ Vagrant.configure(vagrantfile_api_version) do |config|
   1.times do |i|
     node_name = "compute#{i+1}"
     config.vm.define node_name do |node|
-      node.vm.box = 'suse/sles11-sp3'
+      node.vm.box = 'sles-11sp3-minimal'
       node.vm.box_check_update = false
 
       node.vm.provider 'virtualbox' do |provider|
@@ -225,9 +226,13 @@ Vagrant.configure(vagrantfile_api_version) do |config|
         provider.customize [ 'modifyvm', :id, '--nictype2', 'Am79C973' ]
       end
 
+      # Setup network
+      node.vm.network "private_network", type: "dhcp", virtualbox__intnet: "cloud-admin",  auto_config: true
+
       node.vm.synced_folder ".", "/vagrant", disabled: true
 
-      node.vm.network "private_network", ip: "192.168.124.83", auto_config: false
+      # We don't need this, as this is not the way compute nodes are setup in production
+      #node.vm.network "private_network", ip: "192.168.124.83", auto_config: false
 
       node.vm.provision "shell", inline: <<-EOSCRIPT
         set -e
@@ -238,7 +243,7 @@ Vagrant.configure(vagrantfile_api_version) do |config|
           wget http://192.168.124.10:8091/suse-11.3/crowbar_register
         done
         chmod a+x crowbar_register
-        ./crowbar_register --force --interface eth1  --gpg-auto-import-keys
+        ./crowbar_register --force --interface eth1 --gpg-auto-import-keys --no-gpg-checks
       EOSCRIPT
     end
   end
