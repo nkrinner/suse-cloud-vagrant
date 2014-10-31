@@ -1,18 +1,34 @@
 # Prerequisites
 
+Here's the checklist; click on each item for more details:
+
+*   [Hardware requirements](#hardware-requirements)
+*   [Hypervisor](#hypervisor)
+*   [Vagrant](#vagrant) (medium-sized download)
+*   [Vagrant boxes](#vagrant-boxes) (**big downloads!**)
+*   [This git repository](#git-repository) (small download)
+
+***Please do not rely on conference or hotel wifi to download these
+files!***
+
 ## Hardware requirements
 
-*   Machine with >= 3GB RAM and >= roughly 16GB spare disk
+*   x86_64 machine with
+    [hardware virtualization capability](http://en.wikipedia.org/wiki/X86_virtualization)
+    (Intel VT-x or AMD-V) enabled in the BIOS, and at least ~16GB
+    spare disk and 3GB RAM, but:
     *   You should have at least 16GB RAM for building a full HA cloud.
     *   If you only have 8GB and want to build a two-node HA cluster
         for the control plane then you will not have enough RAM for a
         compute node in order to provision a VM instance in the cloud.
         However this is still plenty interesting enough to be worth
-        attempting!  Alternatively you could opt for a single controller
-        node in a non-HA configuration.
+        attempting!
+    *   If you have 6GB you could opt for a single controller node in a
+        non-HA configuration.
     *   If you only have 3 or 4GB, you will be able to run the Crowbar
-        admin node but nothing else.  This is not very useful but at
-        least lets you poke around the Crowbar UI.
+        admin node via `vagrant up admin` but nothing else.  This is
+        not very useful but at least lets you poke around [the Crowbar
+        UI](http://192.168.124.10:3000).
 *   If using the KVM hypervisor, the capability to do nested
     virtualization will greatly aid performance of instances
     booted via OpenStack Compute (Nova).
@@ -56,7 +72,8 @@ The simplest way to do this is probably via 1-click install:
 *    Select "1 Click Install" at the end of the `Virtualization` line
 *    Download and open the resulting `.ymp` file, and follow the instructions.
 
-For other OSs, here is the [VirtualBox downloads page](https://www.virtualbox.org/wiki/Downloads).
+For other OSs, you can
+[download from virtualbox.org](https://www.virtualbox.org/wiki/Downloads).
 
 On Linux systems:
 
@@ -70,8 +87,8 @@ On Linux systems:
     command; `vboxusers` should be included in the output.  If
     not, either run `newgrp vboxusers` or log out and in again.
 
-(The `build.sh` scripts in the pre-canned demos automatically check
-all this for you.)
+(The `build.sh` scripts in the [pre-canned demos](../demos/)
+automatically check all this for you.)
 
 #### Installing KVM
 
@@ -80,7 +97,7 @@ installed, including the development libraries, e.g. on openSUSE, do:
 
     zypper in libvirt libvirt-devel
 
-## Vagrant
+### Vagrant
 
 You will need [Vagrant](http://www.vagrantup.com/) >= 1.6.5 installed.
 For all OSs [the upstream packages](https://www.vagrantup.com/downloads.html)
@@ -95,59 +112,28 @@ installation of plugins, and you will not be able to use the
 If using `libvirt`, please also see
 [vagrant-libvirt.md](vagrant-libvirt.md).
 
-### Vagrant boxes
+#### Vagrant boxes
 
-You will need two boxes:
+You will need two boxes, which are fairly big downloads:
 
-*   the `suse/cloud4-admin` box (currently only [available to SUSE
-    employees](https://etherpad.nue.suse.com/p/cloud-vagrant)
-    but hopefully will be published on https://vagrantcloud.com/suse
-    soon; please [contact us](https://forums.suse.com/forumdisplay.php?65-SUSE-Cloud)
-    if you need a copy urgently
-*   a `suse/sles11sp3` box; again please [contact
-    us](https://forums.suse.com/forumdisplay.php?65-SUSE-Cloud) regarding this
-    as work is currently in flux
+*   `suse/cloud4-admin` (~2.4GB)
+*   `suse/sles11sp3` (~550MB)
 
-For each box there is a corresponding `.json` file containing metadata
-about the box.
+They are available from Vagrant Cloud by typing the following in the
+same user account from which you will use them:
 
-#### Installing the boxes
-
-**IMPORTANT: make sure you do these steps as the same user with which
-you are going to run Vagrant!**
-
-Note that you need to be in the directory containing the downloaded
-boxes:
-
-    # Adjust path as necessary:
-    cd ~/Downloads
-
-    # If you are using libvirt (adjust filename appropriately):
-    vagrant box add cloud4-admin.x86_64-0.1.1.libvirt-Build4.18.json
-
-    # or if you are using virtualbox:
-    vagrant box add cloud4-admin.x86_64-0.1.1.virtualbox-Build4.18.json
-
-and similarly for the `sles11sp3` box.
+    vagrant box add suse/cloud4-admin
+    vagrant box add suse/sles11sp3
 
 #### Updating an existing box
 
-If a newer version of the box has been released and you want to update to it:
+Please see https://docs.vagrantup.com/v2/boxes/versioning.html
 
-    # Adjust for VirtualBox if necessary
-    vagrant box add --force cloud4-admin.x86_64-0.0.2.libvirt-Build2.2.json
+**CAUTION!** If you are using `vagrant-libvirt`, there is a known
+pitfall with updating boxes; please see
+[this caveat](vagrant-libvirt.md#updating-an-existing-box).
 
-**CAUTION!** If you are using libvirt, this is not enough to do
-`vagrant box add --force` or even `vagrant box remove`; you will also
-have to manually remove the old image from `/var/lib/libvirt/images` and
-then do:
-
-    virsh pool-refresh default
-
-before adding the new version, due to
-[this bug](https://github.com/pradels/vagrant-libvirt/issues/85#issuecomment-55419054).
-
-### git repo
+### git repository
 
 You will need a copy of this git repository downloaded.  You can
 simply

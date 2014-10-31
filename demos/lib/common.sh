@@ -78,21 +78,27 @@ EOF
             case "$version" in
                 4.[012].*)
                     die "Please upgrade to the most recent VirtualBox"
+                    ;;
+                4.3.[0-9])
+                    echo "WARNING: Your VirtualBox is old-ish.  Please consider upgrading." >&2
+                    ;;
             esac
 
-            if ! groups | grep -q vboxusers; then
-                die "The current user does not have access to the 'vboxusers' group.  This is necessary for VirtualBox to function correctly."
-            fi
-
-            if which lsmod >/dev/null 2>&1; then
-                if ! lsmod | grep -q vboxdrv; then
-                    die "Your system doesn't have the vboxdrv kernel module loaded.  This is necessary for VirtualBox to function correctly."
+            if [ "`uname -s`" = Linux ]; then
+                if ! groups | grep -q vboxusers; then
+                    die "The current user does not have access to the 'vboxusers' group.  This is necessary for VirtualBox to function correctly."
                 fi
-            else
-                echo "No lsmod found; I guess this is MacOS X."
+
+                if which lsmod >/dev/null 2>&1; then
+                    if ! lsmod | grep -q vboxdrv; then
+                        die "Your system doesn't have the vboxdrv kernel module loaded.  This is necessary for VirtualBox to function correctly."
+                    fi
+                else
+                    fatal "BUG: Linux but no lsmod found?!  Huh?"
+                fi
             fi
 
-            unset VAGRANT_DEFAULT_PROVIDER
+            export VAGRANT_DEFAULT_PROVIDER=virtualbox
             ;;
         *)
             usage "Unrecognised hypervisor '$hypervisor'"

@@ -42,9 +42,9 @@ the order listed in the YAML config file.  Typically this is:
     `install-suse-cloud` will automatically run.  This takes quite a
     few minutes to complete, since it has to start several services.
     Once you see the next VM start to boot, you know it has completed
-    installation, at which point you can visit the Crowbar web UI on
-    [http://192.168.124.10:3000/](http://192.168.124.10:3000/) and
-    watch the other nodes come online one by one.
+    installation, at which point you can visit
+    [the Crowbar web UI](http://192.168.124.10:3000/) and watch the
+    other nodes come online one by one.
 2.  The controller node(s) in numerical order: `controller1`, then
     `controller2` etc.  These will run the OpenStack infrastructure
     services, typically within a Pacemaker cluster.
@@ -77,7 +77,10 @@ usage `vagrant-libvirt`](vagrant-libvirt.md) for known pitfalls.
 
 ## Connecting to the VMs
 
-You can ssh via `vagrant`, e.g.:
+Of course you can log in on the VM consoles, via the hypervisor's
+GUI.
+
+You can also ssh via `vagrant`, e.g.:
 
     vagrant ssh admin
     vagrant ssh controller1 -- -l root
