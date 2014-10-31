@@ -10,7 +10,7 @@ set VAGRANT_SSH_CONFIG=/tmp/ssh-config.vagrant
 
 REM ####################
 REM use this on the devel system
-REM vagrant up admin
+vagrant up admin
 
 REM ####################
 REM use this for the demo
@@ -37,8 +37,15 @@ if %errorlevel% neq 0 (
   echo touch/root privileges test executed on admin node
 )
 
+REM ##################
+REM remove windows line breaks
+vagrant ssh admin -c "sudo  for i in /tmp; do tr -d '\r' < $i > $i; done"
 
 
+REM ##################
+REM copy files
+vagrant ssh admin -c "sudo  cp /tmp/setup-node-aliases /root/bin/setup-node-aliases; sudo chmod u+x /root/bin/setup-node-aliases"
+vagrant ssh admin -c "sudo  cp /tmp/node-sh-vars root/bin/node-sh-vars"
 
 REM ####################
 REM configure the admin node
